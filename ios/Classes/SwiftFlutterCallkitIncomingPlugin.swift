@@ -298,6 +298,10 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             self.callManager.holdCall(call: call, onHold: onHold)
         }
     }
+
+    @objc public func acceptIncomingCall(_ data: Data) {
+        self.callManager.acceptIncomingCall(data)
+    }
     
     @objc public func endCall(_ data: Data) {
         var call: Call? = nil

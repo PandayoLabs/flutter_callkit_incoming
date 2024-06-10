@@ -40,6 +40,18 @@ class CallManager: NSObject {
             self.sharedProvider?.reportCall(with: uuid!, updated: callUpdate)
         })
     }
+
+    func acceptIncomingCall(_ data: Data) {
+        let uuid = UUID(uuidString: data.uuid)
+        let answerCallAction = CXAnswerCallAction(call: uuid!)
+        let callTransaction = CXTransaction()
+        callTransaction.addAction(answerCallAction)
+
+        //requestCall
+        self.requestCall(callTransaction, action: "answerCall", completion: { _ in
+
+        })
+    }
     
     func muteCall(call: Call, isMuted: Bool) {
         let muteAction = CXSetMutedCallAction(call: call.uuid, muted: isMuted)
