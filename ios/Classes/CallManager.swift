@@ -48,9 +48,7 @@ class CallManager: NSObject {
         callTransaction.addAction(answerCallAction)
 
         //requestCall
-        self.requestCall(callTransaction, action: "answerCall", completion: { _ in
-
-        })
+        self.requestCall(callTransaction, action: "answerCall")
     }
     
     func muteCall(call: Call, isMuted: Bool) {

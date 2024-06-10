@@ -62,6 +62,10 @@ class FlutterCallkitIncoming {
     await _channel.invokeMethod("startCall", params.toJson());
   }
 
+  static Future acceptIncomingCall(CallKitParams params) async {
+    await _channel.invokeMethod("acceptIncomingCall", params.toJson());
+  }
+
   /// Muting an Ongoing call.
   /// On iOS, using Callkit(update the ongoing call ui).
   /// On Android, Nothing(only callback event listener).

@@ -226,6 +226,10 @@ class FlutterCallkitIncomingPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                     result.success("OK")
                 }
 
+                "acceptIncomingCall" -> {
+                    result.success("OK")
+                }
+
                 "callConnected" -> {
                     result.success("OK")
                 }
