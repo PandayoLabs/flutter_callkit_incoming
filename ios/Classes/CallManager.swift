@@ -74,8 +74,13 @@ class CallManager: NSObject {
     }
     
     func connectedCall(call: Call) {
-        let callItem = self.callWithUUID(uuid: call.uuid)
-        callItem?.connectedCall(completion: nil)
+        let uuid = UUID(uuidString: call.uuid)
+        let answerCallAction = CXAnswerCallAction(call: uuid!)
+        let callTransaction = CXTransaction()
+        callTransaction.addAction(answerCallAction)
+
+        //requestCall
+        self.requestCall(callTransaction, action: "answerCall")
     }
     
     func endCallAlls() {
