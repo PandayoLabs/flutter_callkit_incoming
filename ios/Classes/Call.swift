@@ -176,9 +176,9 @@ public class Call: NSObject {
         self.supportsUngrouping = true
         self.includesCallsInRecents = true
         self.ringtonePath = ""
-        self.configureAudioSession = true
+        self.configureAudioSession = false
         self.audioSessionMode = ""
-        self.audioSessionActive = true
+        self.audioSessionActive = false
         self.audioSessionPreferredSampleRate = 44100.0
         self.audioSessionPreferredIOBufferDuration = 0.005
     }
