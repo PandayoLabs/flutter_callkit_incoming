@@ -41,30 +41,20 @@ class CallManager: NSObject {
         })
     }
 
-    func acceptIncomingCall(_ data: Data) {
-        let uuid = UUID(uuidString: data.uuid)
-        let answerCallAction = CXAnswerCallAction(call: uuid!)
-        let callTransaction = CXTransaction()
-        callTransaction.addAction(answerCallAction)
-
-        //requestCall
-        self.requestCall(callTransaction, action: "answerCall")
-    }
-    
     func muteCall(call: Call, isMuted: Bool) {
         let muteAction = CXSetMutedCallAction(call: call.uuid, muted: isMuted)
         let callTransaction = CXTransaction()
         callTransaction.addAction(muteAction)
         self.requestCall(callTransaction, action: "muteCall")
     }
-    
+
     func holdCall(call: Call, onHold: Bool) {
         let muteAction = CXSetHeldCallAction(call: call.uuid, onHold: onHold)
         let callTransaction = CXTransaction()
         callTransaction.addAction(muteAction)
         self.requestCall(callTransaction, action: "holdCall")
     }
-    
+
     func endCall(call: Call) {
         let endCallAction = CXEndCallAction(call: call.uuid)
         let callTransaction = CXTransaction()
@@ -72,16 +62,31 @@ class CallManager: NSObject {
         //requestCall
         self.requestCall(callTransaction, action: "endCall")
     }
-    
-    func connectedCall(call: Call) {
-        let answerCallAction = CXAnswerCallAction(call: call.uuid)
-        let callTransaction = CXTransaction()
-        callTransaction.addAction(answerCallAction)
 
-        //requestCall
-        self.requestCall(callTransaction, action: "answerCall")
+    func connectedCall(call: Call) {
+        let callItem = self.callWithUUID(uuid: call.uuid)
+        callItem?.connectedCall(completion: nil)
+//        let calls = callController.callObserver.calls
+//        let isEmpty = calls.isEmpty
+//
+//        print("calls are empty  \(isEmpty)")
+//        print("call id  \(call.uuid)")
+//        guard calls.contains(where: { $0.uuid == call.uuid }) else {
+//            print("No call found with UUID: \(call.uuid)")
+//            return
+//        }
+//
+//        if(callItem != nil){
+//            let answerCallAction = CXAnswerCallAction(call: callItem!.uuid)
+//            let callTransaction = CXTransaction()
+//            callTransaction.addAction(answerCallAction)
+//            callItem?.connectedCall(completion: nil)
+//
+//            //requestCall
+//            self.requestCall(callTransaction, action: "answerCall")
+//        }
     }
-    
+
     func endCallAlls() {
         let calls = callController.callObserver.calls
         for call in calls {
@@ -91,7 +96,7 @@ class CallManager: NSObject {
             self.requestCall(callTransaction, action: "endCallAlls")
         }
     }
-    
+
     func activeCalls() -> [[String: Any]] {
         let calls = callController.callObserver.calls
         var json = [[String: Any]]()
@@ -107,21 +112,21 @@ class CallManager: NSObject {
         }
         return json
     }
-    
-    
+
+
     func setHold(call: Call, onHold: Bool) {
         let handleCall = CXSetHeldCallAction(call: call.uuid, onHold: onHold)
         let callTransaction = CXTransaction()
         callTransaction.addAction(handleCall)
         //requestCall
     }
-    
-    
+
+
     private func requestCall(_ transaction: CXTransaction, action: String, completion: ((Bool) -> Void)? = nil) {
         callController.request(transaction){ error in
             if let error = error {
                 //fail
-                print("Error requesting transaction: \(error)")
+                print("Error requesting \(action) transaction: \(error)")
             }else {
                 if(action == "startCall"){
                     //TODO: push notification for Start Call
@@ -133,8 +138,8 @@ class CallManager: NSObject {
             }
         }
     }
-    
-    
+
+
     private func getHandleType(_ handleType: String?) -> CXHandle.HandleType {
         var typeDefault = CXHandle.HandleType.generic
         switch handleType {
@@ -148,16 +153,16 @@ class CallManager: NSObject {
         }
         return typeDefault
     }
-    
-    
+
+
     static let callsChangedNotification = Notification.Name("CallsChangedNotification")
     var callsChangedHandler: (() -> Void)?
-    
+
     func callWithUUID(uuid: UUID) -> Call?{
         guard let idx = calls.firstIndex(where: { $0.uuid == uuid }) else { return nil }
         return calls[idx]
     }
-    
+
     func addCall(_ call: Call){
         calls.append(call)
         call.stateDidChange = { [weak self] in
@@ -168,23 +173,21 @@ class CallManager: NSObject {
         callsChangedHandler?()
         postCallNotification()
     }
-    
+
     func removeCall(_ call: Call){
         guard let idx = calls.firstIndex(where: { $0 === call }) else { return }
         calls.remove(at: idx)
         callsChangedHandler?()
         postCallNotification()
     }
-    
+
     func removeAllCalls() {
         calls.removeAll()
         callsChangedHandler?()
         postCallNotification()
     }
-    
+
     private func postCallNotification(){
         NotificationCenter.default.post(name: type(of: self).callsChangedNotification, object: self)
     }
-    
-    
 }
