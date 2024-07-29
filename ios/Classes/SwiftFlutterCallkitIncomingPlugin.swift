@@ -119,8 +119,13 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 result("OK")
                 return
             }
-            if let getArgs = args as? [String: Any] {
-                self.endCall(Data(args: getArgs))
+            if(self.isFromPushKit){
+                self.endCall(self.data!)
+            }else{
+                if let getArgs = args as? [String: Any] {
+                    self.data = Data(args: getArgs)
+                    self.endCall(self.data!)
+                }
             }
             result("OK")
             break
@@ -131,7 +136,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 result("OK")
                 return
             }
-
+            
             self.muteCall(callId, isMuted: isMuted)
             result("OK")
             break
@@ -188,7 +193,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 result("OK")
                 return
             }
-
+            
             self.silenceEvents = silence
             result("OK")
             break;
@@ -307,6 +312,10 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             self.callManager.holdCall(call: call, onHold: onHold)
         }
     }
+    
+    @objc public func acceptIncomingCall(_ data: Data) {
+        self.callManager.acceptIncomingCall(data)
+    }
 
     @objc public func endCall(_ data: Data) {
         var call: Call? = nil
@@ -317,7 +326,23 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         }else {
             call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
         }
-        self.callManager.endCall(call: call!)
+        
+        let calls = self.activeCalls();
+        if calls.isEmpty {
+            self.callManager.endCallWithReason(call: call!)
+            return
+        } else {
+            if let callEntity = calls.first(where: { dict in
+                if let id = dict["id"] as? String {
+                    return id == data.uuid
+                }
+                return false
+            }){
+                self.callManager.endCall(call: call!)
+            } else {
+                self.callManager.endCallWithReason(call: call!)
+            }
+        }
     }
 
     @objc public func connectedCall(_ data: Data) {
