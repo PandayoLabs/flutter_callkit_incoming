@@ -40,6 +40,10 @@ class CallManager: NSObject {
             self.sharedProvider?.reportCall(with: uuid!, updated: callUpdate)
         })
     }
+    
+    func endCallWithReason(call: Call) {
+        self.sharedProvider?.reportCall(with: call.uuid, endedAt: nil, reason: CXCallEndedReason.failed)
+    }
 
     func muteCall(call: Call, isMuted: Bool) {
         let muteAction = CXSetMutedCallAction(call: call.uuid, muted: isMuted)
@@ -62,29 +66,24 @@ class CallManager: NSObject {
         //requestCall
         self.requestCall(callTransaction, action: "endCall")
     }
+    
+    func acceptIncomingCall(_ data: Data) {
+        let uuid = UUID(uuidString: data.uuid)
+        let answerCallAction = CXAnswerCallAction(call: uuid!)
+        let callTransaction = CXTransaction()
+        callTransaction.addAction(answerCallAction)
+
+        //requestCall
+        self.requestCall(callTransaction, action: "answerCall")
+    }
 
     func connectedCall(call: Call) {
-        let callItem = self.callWithUUID(uuid: call.uuid)
-        callItem?.connectedCall(completion: nil)
-//        let calls = callController.callObserver.calls
-//        let isEmpty = calls.isEmpty
-//
-//        print("calls are empty  \(isEmpty)")
-//        print("call id  \(call.uuid)")
-//        guard calls.contains(where: { $0.uuid == call.uuid }) else {
-//            print("No call found with UUID: \(call.uuid)")
-//            return
-//        }
-//
-//        if(callItem != nil){
-//            let answerCallAction = CXAnswerCallAction(call: callItem!.uuid)
-//            let callTransaction = CXTransaction()
-//            callTransaction.addAction(answerCallAction)
-//            callItem?.connectedCall(completion: nil)
-//
-//            //requestCall
-//            self.requestCall(callTransaction, action: "answerCall")
-//        }
+        let answerCallAction = CXAnswerCallAction(call: call.uuid)
+        let callTransaction = CXTransaction()
+        callTransaction.addAction(answerCallAction)
+
+        //requestCall
+        self.requestCall(callTransaction, action: "answerCall")
     }
 
     func endCallAlls() {
